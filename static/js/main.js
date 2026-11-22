@@ -535,12 +535,12 @@ async function executeModelTraining() {
         if (badge) badge.textContent = `${mins}:${secs}`;
     }, 1000);
 
-    // Dynamic progress stages
-    const stageTimeout1 = setTimeout(() => setPipelineStage(2, 30, 'Stage 2: Stratified 80/20 train/test partition...'), 1000);
-    const stageTimeout2 = setTimeout(() => setPipelineStage(3, 45, 'Stage 3: Training Baseline Random Forest (128 features)...'), 2000);
-    const stageTimeout3 = setTimeout(() => setPipelineStage(4, 65, 'Stage 4: Running Genetic Algorithm feature optimization...'), 3200);
-    const stageTimeout4 = setTimeout(() => setPipelineStage(5, 80, 'Stage 5: Extracting optimal feature chromosome mask...'), 5000);
-    const stageTimeout5 = setTimeout(() => setPipelineStage(6, 92, 'Stage 6: Training GA-Optimized Random Forest on selected features...'), 6500);
+    // Dynamic progress stages (fast transition)
+    const stageTimeout1 = setTimeout(() => setPipelineStage(2, 25, 'Stage 2: Stratified 80/20 train/test partition...'), 250);
+    const stageTimeout2 = setTimeout(() => setPipelineStage(3, 45, 'Stage 3: Training Baseline Random Forest (128 features)...'), 500);
+    const stageTimeout3 = setTimeout(() => setPipelineStage(4, 65, 'Stage 4: Running Genetic Algorithm feature optimization...'), 800);
+    const stageTimeout4 = setTimeout(() => setPipelineStage(5, 80, 'Stage 5: Extracting optimal feature chromosome mask...'), 1100);
+    const stageTimeout5 = setTimeout(() => setPipelineStage(6, 95, 'Stage 6: Training GA-Optimized Random Forest on selected features...'), 1400);
 
     try {
         let response = await fetch('/api/train_models', {
