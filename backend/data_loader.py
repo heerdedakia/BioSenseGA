@@ -27,7 +27,9 @@ def load_batch_file(filepath):
     return data
 
 def load_all_batches(data_dir):
-    all_data = []
+    """High-performance vectorized loader for all 10 batch files."""
+    import numpy as np
+    all_rows, labels, batches = [], [], []
     found_files = False
     
     for batch_id in range(1, 11):
@@ -36,19 +38,32 @@ def load_all_batches(data_dir):
         
         if os.path.exists(filepath):
             found_files = True
-            batch_data = load_batch_file(filepath)
-            for label, features in batch_data:
-                row = {'class_label': label, 'batch_id': batch_id}
-                for i in range(1, 129):
-                    row[f'feature_{i}'] = features.get(i, 0.0)
-                all_data.append(row)
+            with open(filepath, 'r') as f:
+                for line in f:
+                    parts = line.strip().split()
+                    if not parts:
+                        continue
+                    row = np.zeros(128, dtype=np.float32)
+                    for p in parts[1:]:
+                        if ':' in p:
+                            c, v = p.split(':', 1)
+                            idx = int(c) - 1
+                            if 0 <= idx < 128:
+                                row[idx] = float(v)
+                    all_rows.append(row)
+                    labels.append(int(parts[0]))
+                    batches.append(batch_id)
         else:
             print(f"Warning: {filename} not found in {data_dir}. Skipping.")
             
     if not found_files:
         raise ValueError(f"No batch files found in directory: {data_dir}")
         
-    return pd.DataFrame(all_data)
+    X = np.vstack(all_rows)
+    df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(1, 129)])
+    df.insert(0, 'class_label', labels)
+    df.insert(1, 'batch_id', batches)
+    return df
 
 def get_dataset_info(df):
     class_dist = df['class_label'].value_counts().to_dict()
