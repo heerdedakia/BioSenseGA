@@ -379,6 +379,11 @@ def train_models_and_run_ga():
         )
         t_opt_dur = time.time() - t_opt_start
 
+        # Free intermediate objects and trigger garbage collection
+        del ga
+        import gc
+        gc.collect()
+
         # Detailed Sensor Architecture & Feature Breakdown
         sensor_groups = get_detailed_sensor_groups(best_chromosome)
         sensor_summary = get_sensor_selection_summary(best_chromosome, FEATURE_NAMES)

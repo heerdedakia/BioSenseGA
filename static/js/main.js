@@ -614,12 +614,16 @@ async function executeModelTraining() {
             showToast(`Optimization complete! ${data.optimized.n_features} features selected (${data.optimized.feature_reduction_pct}% reduction).`, 'success');
         } else {
             AppState.isTraining = false;
+            const descEl = document.getElementById('pipeline-stage-description');
+            if (descEl) descEl.innerHTML = `<span style="color: var(--danger); font-weight: 600;"><i class="fas fa-triangle-exclamation"></i> Training error: ${data.error}</span>`;
             showToast(`Training error: ${data.error}`, 'error');
             updateReadinessIndicators();
         }
     } catch (e) {
         clearInterval(timerInterval);
         AppState.isTraining = false;
+        const descEl = document.getElementById('pipeline-stage-description');
+        if (descEl) descEl.innerHTML = `<span style="color: var(--danger); font-weight: 600;"><i class="fas fa-triangle-exclamation"></i> Pipeline failed: ${e.message}</span>`;
         showToast(`Request failed: ${e.message}`, 'error');
         updateReadinessIndicators();
     } finally {
