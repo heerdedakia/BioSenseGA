@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioSenseGA – AI-Powered Gas Classification & Sensor Optimization</title>
+    
+    <!-- Plotly.js for interactive charting -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- ==================================================================
+             FIXED SIDEBAR NAVIGATION (9 SECTIONS)
+             ================================================================== -->
+        <aside class="app-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon"><i class="fas fa-dna"></i></div>
+                    <div class="sidebar-logo-text">BioSense<span>GA</span></div>
+                </div>
+                <button class="sidebar-toggle-btn" id="sidebar-toggle" title="Toggle Sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Core Navigation</div>
+                
+                <div class="nav-item active" data-section="overview">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Overview</span>
+                </div>
+                
+                <div class="nav-item" data-section="dataset-explorer">
+                    <i class="fas fa-database"></i>
+                    <span>Dataset Explorer</span>
+                </div>
+                
+                <div class="nav-item" data-section="model-training">
+                    <i class="fas fa-microchip"></i>
+                    <span>Model Training</span>
+                    <span class="nav-item-badge" id="nav-train-badge">Ready</span>
+                </div>
+                
+                <div class="nav-item" data-section="genetic-algorithm">
+                    <i class="fas fa-sliders"></i>
+                    <span>Genetic Algorithm</span>
+                </div>
+                
+                <div class="nav-item" data-section="feature-selection">
+                    <i class="fas fa-filter"></i>
+                    <span>Feature Selection</span>
+                </div>
+
+                <div class="nav-section-title">Inference & Analysis</div>
+                
+                <div class="nav-item" data-section="gas-prediction">
+                    <i class="fas fa-flask-vial"></i>
+                    <span>Gas Prediction</span>
+                    <span class="nav-item-badge" style="background-color: var(--primary);">Interactive</span>
+                </div>
+                
+                <div class="nav-item" data-section="performance-analysis">
+                    <i class="fas fa-scale-balanced"></i>
+                    <span>Performance Analysis</span>
+                </div>
+                
+                <div class="nav-item" data-section="prediction-history">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span>Prediction History</span>
+                    <span class="nav-item-badge" id="nav-history-count">0</span>
+                </div>
+                
+                <div class="nav-item" data-section="about-biosense">
+                    <i class="fas fa-circle-info"></i>
+                    <span>About BioSenseGA</span>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="status-indicator-box">
+                    <div class="status-pulse-dot standby" id="system-status-dot"></div>
+                    <div class="status-text-area">
+                        <span class="status-label">System State</span>
+                        <span class="status-val" id="system-status-text">Standby</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==================================================================
+             MAIN APPLICATION WORKSPACE
+             ================================================================== -->
+        <div class="app-main-content">
+            
+            <!-- Sticky Top Header -->
+            <header class="app-top-header">
+                <div class="header-breadcrumbs">
+                    <span>BioSenseGA Platform</span>
+                    <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+                    <span class="current-page" id="breadcrumb-current">Overview Dashboard</span>
+                </div>
+
+                <div class="header-actions">
+                    <span class="tech-tag"><i class="fas fa-server"></i> UCI Drift Dataset</span>
+                    <span class="tech-tag"><i class="fas fa-microchip"></i> 16 MOX Sensors</span>
+                    <span class="tech-tag"><i class="fas fa-tree"></i> Random Forest</span>
+                </div>
+            </header>
+
+            <!-- Main Content Container with SPA View Sections -->
+            <main class="content-body">
+                
+                <!-- ==========================================================
+                     SECTION 1: OVERVIEW DASHBOARD
+                     ========================================================== -->
+                <section class="view-section active" id="section-overview">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-chart-pie"></i> Platform Overview</h1>
+                            <p class="section-subtitle">Real-time status of sensor hardware simulation, dataset loading, and GA optimization metrics</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="navigateToSection('model-training')">
+                                <i class="fas fa-play"></i> Open Training Hub
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- KPI Summary Cards Grid -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-database"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Dataset Samples</span>
+                                <span class="kpi-number" id="kpi-samples">--</span>
+                                <span class="kpi-sub" id="kpi-samples-sub">10 Batches (36 Mos)</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-violet">
+                            <div class="kpi-icon"><i class="fas fa-microchip"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Physical Sensors</span>
+                                <span class="kpi-number">16</span>
+                                <span class="kpi-sub">4 Sensor Models (Figaro MOX)</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-list-check"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Total Features</span>
+                                <span class="kpi-number">128</span>
+                                <span class="kpi-sub">8 Features per Sensor</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-green">
+                            <div class="kpi-icon"><i class="fas fa-flask"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Gas Analytes</span>
+                                <span class="kpi-number">6</span>
+                                <span class="kpi-sub">Ethanol, Ammonia, Acetone...</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-violet">
+                            <div class="kpi-icon"><i class="fas fa-filter"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Selected Features</span>
+                                <span class="kpi-number" id="kpi-selected-features">--</span>
+                                <span class="kpi-sub" id="kpi-reduction-pct">Awaiting GA Run</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-green">
+                            <div class="kpi-icon"><i class="fas fa-bullseye"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Optimized Accuracy</span>
+                                <span class="kpi-number" id="kpi-opt-accuracy">--%</span>
+                                <span class="kpi-sub" id="kpi-acc-sub">Baseline: --%</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-amber">
+                            <div class="kpi-icon"><i class="fas fa-gears"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Training Status</span>
+                                <span class="kpi-number" id="kpi-training-status" style="font-size: 16px;">Not Trained</span>
+                                <span class="kpi-sub" id="kpi-last-trained">Ready to start</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-wand-magic-sparkles"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Model Pipeline</span>
+                                <span class="kpi-number" style="font-size: 16px;">GA + RF</span>
+                                <span class="kpi-sub">Genetic Feature Selection</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Workflow Architecture Banner -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header-styled">
+                            <h3 class="card-title"><i class="fas fa-diagram-project"></i> BioSenseGA End-to-End Workflow Architecture</h3>
+                            <span class="badge badge-info" style="font-size: 12px; color: var(--primary);">Engineering Pipeline</span>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;">
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">1</div>
+                                <div class="step-text">
+                                    <span class="step-title">Dataset Loading</span>
+                                    <span class="step-desc">10 Batches, 13,910 Samples</span>
+                                </div>
+                            </div>
+                            <i class="fas fa-arrow-right text-muted" style="display: none;"></i>
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">2</div>
+                                <div class="step-text">
+                                    <span class="step-title">Preprocessing</span>
+                                    <span class="step-desc">Stratified Split & Scaling</span>
+                                </div>
+                            </div>
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">3</div>
+                                <div class="step-text">
+                                    <span class="step-title">Genetic Algorithm</span>
+                                    <span class="step-desc">Bio-Inspired Feature Search</span>
+                                </div>
+                            </div>
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">4</div>
+                                <div class="step-text">
+                                    <span class="step-title">Feature Selection</span>
+                                    <span class="step-desc">Dimensionality Reduction</span>
+                                </div>
+                            </div>
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">5</div>
+                                <div class="step-text">
+                                    <span class="step-title">Random Forest</span>
+                                    <span class="step-desc">Model Ensemble Training</span>
+                                </div>
+                            </div>
+                            <div class="stage-step" style="flex: 1; min-width: 150px;">
+                                <div class="step-num">6</div>
+                                <div class="step-text">
+                                    <span class="step-title">Gas Prediction</span>
+                                    <span class="step-desc">6-Class Probability Inference</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Column Layout: Gas Distribution Chart & 16-Sensor Architecture -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        
+                        <!-- Gas Distribution Chart -->
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-chart-column"></i> Gas Analytes Distribution</h3>
+                                <small class="text-muted">6 Target Analytes</small>
+                            </div>
+                            <div id="overview-gas-chart" style="height: 280px;"></div>
+                        </div>
+
+                        <!-- System Pipeline Readiness Checklist -->
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-clipboard-check"></i> System Pipeline Readiness</h3>
+                                <span class="badge" id="overview-readiness-badge" style="color: var(--warning);">Incomplete</span>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                                <div class="stage-step" id="check-dataset-step">
+                                    <div class="step-num" id="check-dataset-icon"><i class="fas fa-circle-xmark"></i></div>
+                                    <div class="step-text">
+                                        <span class="step-title">UCI Gas Sensor Array Drift Dataset</span>
+                                        <span class="step-desc" id="check-dataset-text">Dataset not loaded into memory.</span>
+                                    </div>
+                                </div>
+
+                                <div class="stage-step" id="check-baseline-step">
+                                    <div class="step-num" id="check-baseline-icon"><i class="fas fa-circle-xmark"></i></div>
+                                    <div class="step-text">
+                                        <span class="step-title">Baseline Random Forest Model</span>
+                                        <span class="step-desc" id="check-baseline-text">Baseline model not trained yet.</span>
+                                    </div>
+                                </div>
+
+                                <div class="stage-step" id="check-ga-step">
+                                    <div class="step-num" id="check-ga-icon"><i class="fas fa-circle-xmark"></i></div>
+                                    <div class="step-text">
+                                        <span class="step-title">Genetic Algorithm Optimization</span>
+                                        <span class="step-desc" id="check-ga-text">GA feature search not completed.</span>
+                                    </div>
+                                </div>
+
+                                <div class="stage-step" id="check-opt-step">
+                                    <div class="step-num" id="check-opt-icon"><i class="fas fa-circle-xmark"></i></div>
+                                    <div class="step-text">
+                                        <span class="step-title">GA-Optimized Random Forest</span>
+                                        <span class="step-desc" id="check-opt-text">Optimized model not ready for inference.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 16 MOX Sensor Hardware Architecture Grid -->
+                    <div class="card">
+                        <div class="card-header-styled">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-microchip"></i> 16-Sensor Hardware Array Architecture</h3>
+                                <p class="text-muted" style="font-size: 12px; margin-top: 2px;">Four Figaro Metal Oxide Semiconductor (MOX) gas sensor types, with 4 sensors each</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+                            <!-- TGS2600 Group (S1 - S4) -->
+                            <div class="card card-secondary" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="color: var(--primary);">Sensors 1 - 4</strong>
+                                    <span class="tech-tag" style="padding: 2px 8px; font-size: 11px;">TGS2600</span>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">General Air Contaminants</div>
+                                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">High sensitivity to hydrogen (H₂), carbon monoxide (CO), and gaseous air pollutants.</p>
+                                <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Features: <strong>32 total (8 per sensor)</strong></div>
+                            </div>
+
+                            <!-- TGS2602 Group (S5 - S8) -->
+                            <div class="card card-secondary" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="color: var(--success);">Sensors 5 - 8</strong>
+                                    <span class="tech-tag" style="padding: 2px 8px; font-size: 11px;">TGS2602</span>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">VOCs & Odorous Gases</div>
+                                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">High sensitivity to ammonia (NH₃), hydrogen sulfide (H₂S), and volatile organic solvents.</p>
+                                <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Features: <strong>32 total (8 per sensor)</strong></div>
+                            </div>
+
+                            <!-- TGS2610 Group (S9 - S12) -->
+                            <div class="card card-secondary" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="color: var(--warning);">Sensors 9 - 12</strong>
+                                    <span class="tech-tag" style="padding: 2px 8px; font-size: 11px;">TGS2610</span>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Combustible Hydrocarbons</div>
+                                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">High sensitivity to LP gases, butane, propane, and volatile combustible hydrocarbons.</p>
+                                <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Features: <strong>32 total (8 per sensor)</strong></div>
+                            </div>
+
+                            <!-- TGS2620 Group (S13 - S16) -->
+                            <div class="card card-secondary" style="padding: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <strong style="color: var(--violet);">Sensors 13 - 16</strong>
+                                    <span class="tech-tag" style="padding: 2px 8px; font-size: 11px;">TGS2620</span>
+                                </div>
+                                <div style="font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Alcohol & Solvent Vapors</div>
+                                <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">High sensitivity to ethanol (C₂H₅OH) and volatile organic solvent vapors with fast response.</p>
+                                <div style="margin-top: 8px; font-size: 11px; color: var(--text-secondary);">Features: <strong>32 total (8 per sensor)</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 2: DATASET EXPLORER
+                     ========================================================== -->
+                <section class="view-section" id="section-dataset-explorer">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-database"></i> Dataset Explorer</h1>
+                            <p class="section-subtitle">UCI Gas Sensor Array Drift Repository: 13,910 experimental measurements across 10 temporal batches</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" id="btn-load-dataset" onclick="triggerLoadDataset()">
+                                <i class="fas fa-cloud-arrow-down"></i> Load / Reload Dataset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Dataset Metadata Bar -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-file-waveform"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Total Samples</span>
+                                <span class="kpi-number" id="ds-samples-count">--</span>
+                                <span class="kpi-sub">Across 10 Data Batches</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-violet">
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Sensor Features</span>
+                                <span class="kpi-number">128</span>
+                                <span class="kpi-sub">16 Sensors × 8 Dynamics</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-green">
+                            <div class="kpi-icon"><i class="fas fa-vial-circle-check"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Gas Analytes</span>
+                                <span class="kpi-number">6</span>
+                                <span class="kpi-sub">Ethanol, Ethylene, Ammonia...</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-amber">
+                            <div class="kpi-icon"><i class="fas fa-calendar-days"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Recording Duration</span>
+                                <span class="kpi-number">36 Mos</span>
+                                <span class="kpi-sub">Continuous Sensor Drift Tracking</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Chart Layout: Batches Breakdown & Gas Balance -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-layer-group"></i> Samples Per Batch (1 - 10)</h3>
+                                <small class="text-muted">Temporal Drift Batches</small>
+                            </div>
+                            <div id="dataset-batches-chart" style="height: 260px;"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-chart-pie"></i> Gas Class Proportions</h3>
+                                <small class="text-muted">Analyte Balance</small>
+                            </div>
+                            <div id="dataset-classes-chart" style="height: 260px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Searchable & Paginated Dataset Table -->
+                    <div class="card">
+                        <div class="card-header-styled">
+                            <h3 class="card-title"><i class="fas fa-table-list"></i> Searchable Dataset Records</h3>
+                            
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <!-- Batch Filter -->
+                                <select class="form-control" id="table-filter-batch" style="width: 140px; padding: 6px 10px;" onchange="fetchDatasetTable(1)">
+                                    <option value="">All Batches</option>
+                                    <option value="1">Batch 1</option>
+                                    <option value="2">Batch 2</option>
+                                    <option value="3">Batch 3</option>
+                                    <option value="4">Batch 4</option>
+                                    <option value="5">Batch 5</option>
+                                    <option value="6">Batch 6</option>
+                                    <option value="7">Batch 7</option>
+                                    <option value="8">Batch 8</option>
+                                    <option value="9">Batch 9</option>
+                                    <option value="10">Batch 10</option>
+                                </select>
+
+                                <!-- Gas Class Filter -->
+                                <select class="form-control" id="table-filter-gas" style="width: 150px; padding: 6px 10px;" onchange="fetchDatasetTable(1)">
+                                    <option value="">All Gas Classes</option>
+                                    <option value="1">Ethanol</option>
+                                    <option value="2">Ethylene</option>
+                                    <option value="3">Ammonia</option>
+                                    <option value="4">Acetaldehyde</option>
+                                    <option value="5">Acetone</option>
+                                    <option value="6">Toluene</option>
+                                </select>
+
+                                <!-- Search Input -->
+                                <input type="text" class="form-control" id="table-search-input" placeholder="Search Sample ID..." style="width: 160px; padding: 6px 10px;" onkeyup="if(event.key === 'Enter') fetchDatasetTable(1)">
+                                
+                                <button class="btn btn-secondary" onclick="fetchDatasetTable(1)">
+                                    <i class="fas fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="custom-table" id="dataset-table">
+                                <thead>
+                                    <tr>
+                                        <th>Sample #</th>
+                                        <th>Batch</th>
+                                        <th>Analyte Class</th>
+                                        <th>S1_DR (ΔR)</th>
+                                        <th>S1_abs_DR</th>
+                                        <th>S5_DR</th>
+                                        <th>S9_DR</th>
+                                        <th>S13_DR</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dataset-table-body">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                            <i class="fas fa-spinner fa-spin"></i> Dataset not loaded yet. Click "Load Dataset" above.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination Footer -->
+                        <div class="pagination-wrap">
+                            <span id="table-pagination-info">Showing 0 to 0 of 0 entries</span>
+                            <div class="pagination-controls">
+                                <button class="page-btn" id="btn-table-prev" onclick="changeTablePage(-1)" disabled>
+                                    <i class="fas fa-chevron-left"></i> Prev
+                                </button>
+                                <span style="align-self: center; font-size: 12px; padding: 0 8px;" id="table-page-display">Page 1 of 1</span>
+                                <button class="page-btn" id="btn-table-next" onclick="changeTablePage(1)" disabled>
+                                    Next <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 3: MODEL TRAINING
+                     ========================================================== -->
+                <section class="view-section" id="section-model-training">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-microchip"></i> Model Training & Pipeline Execution</h1>
+                            <p class="section-subtitle">Train baseline Random Forest (128 features), execute GA optimization, and evaluate on held-out test data</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" id="btn-train-pipeline" onclick="executeModelTraining()">
+                                <i class="fas fa-play"></i> Train Models (Full Pipeline)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Pipeline Stage Tracker -->
+                    <div class="stage-tracker-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 16px; font-weight: 700; color: var(--text-main);">Pipeline Execution Tracker</h3>
+                                <p style="font-size: 12px; color: var(--text-muted);">Step-by-step sequential execution with zero test-set leakage</p>
+                            </div>
+                            <span class="badge" id="training-timer-badge" style="font-family: var(--font-mono); font-size: 12px; color: var(--primary);">00:00</span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="progress-track">
+                            <div class="progress-fill" id="training-progress-bar"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted);">
+                            <span id="training-status-text">Ready to initiate training</span>
+                            <span id="training-pct-text">0%</span>
+                        </div>
+
+                        <!-- 7 Stages Visualizer -->
+                        <div class="stages-list">
+                            <div class="stage-step" id="pipe-stage-1">
+                                <div class="step-num">1</div>
+                                <div class="step-text">
+                                    <span class="step-title">Load & Preprocess</span>
+                                    <span class="step-desc">13,910 rows parsed</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-2">
+                                <div class="step-num">2</div>
+                                <div class="step-text">
+                                    <span class="step-title">Stratified Split</span>
+                                    <span class="step-desc">80% Train, 20% Test</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-3">
+                                <div class="step-num">3</div>
+                                <div class="step-text">
+                                    <span class="step-title">Baseline RF</span>
+                                    <span class="step-desc">All 128 Features</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-4">
+                                <div class="step-num">4</div>
+                                <div class="step-text">
+                                    <span class="step-title">Genetic Algorithm</span>
+                                    <span class="step-desc">CV Feature Search</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-5">
+                                <div class="step-num">5</div>
+                                <div class="step-text">
+                                    <span class="step-title">Chromosome Mask</span>
+                                    <span class="step-desc">Select Top Features</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-6">
+                                <div class="step-num">6</div>
+                                <div class="step-text">
+                                    <span class="step-title">Optimized RF</span>
+                                    <span class="step-desc">Train on Selected Sub</span>
+                                </div>
+                            </div>
+
+                            <div class="stage-step" id="pipe-stage-7">
+                                <div class="step-num">7</div>
+                                <div class="step-text">
+                                    <span class="step-title">Test Evaluation</span>
+                                    <span class="step-desc">Unseen Test Set Bench</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Training Outcome Comparison Cards (Shown post-training) -->
+                    <div id="training-results-panel" style="display: none;">
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-icon"><i class="fas fa-scale-balanced"></i></div>
+                                <div class="kpi-body">
+                                    <span class="kpi-label">Baseline Accuracy</span>
+                                    <span class="kpi-number" id="train-res-baseline-acc">--%</span>
+                                    <span class="kpi-sub">128 Features Evaluated</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card accent-green">
+                                <div class="kpi-icon"><i class="fas fa-award"></i></div>
+                                <div class="kpi-body">
+                                    <span class="kpi-label">Optimized Accuracy</span>
+                                    <span class="kpi-number" id="train-res-opt-acc">--%</span>
+                                    <span class="kpi-sub" id="train-res-acc-delta">Delta: --%</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card accent-violet">
+                                <div class="kpi-icon"><i class="fas fa-compress-arrows-alt"></i></div>
+                                <div class="kpi-body">
+                                    <span class="kpi-label">Feature Reduction</span>
+                                    <span class="kpi-number" id="train-res-reduction">--%</span>
+                                    <span class="kpi-sub" id="train-res-feat-counts">128 → -- Features</span>
+                                </div>
+                            </div>
+
+                            <div class="kpi-card accent-amber">
+                                <div class="kpi-icon"><i class="fas fa-stopwatch"></i></div>
+                                <div class="kpi-body">
+                                    <span class="kpi-label">Total Duration</span>
+                                    <span class="kpi-number" id="train-res-duration">--s</span>
+                                    <span class="kpi-sub">GA + 2 Classifier Fits</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Success Note & Quick Jump -->
+                        <div class="card" style="border-left: 4px solid var(--success); margin-bottom: 24px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+                                <div>
+                                    <h4 style="color: var(--success); font-size: 15px; font-weight: 700;">
+                                        <i class="fas fa-circle-check"></i> Training Pipeline Completed Successfully!
+                                    </h4>
+                                    <p id="train-conclusion-text" style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">
+                                        Models are trained and ready for manual gas prediction and performance benchmarking.
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-secondary" onclick="navigateToSection('feature-selection')">
+                                        <i class="fas fa-filter"></i> View Selected Features
+                                    </button>
+                                    <button class="btn btn-primary" onclick="navigateToSection('gas-prediction')">
+                                        <i class="fas fa-flask-vial"></i> Predict Gas
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 4: GENETIC ALGORITHM
+                     ========================================================== -->
+                <section class="view-section" id="section-genetic-algorithm">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-sliders"></i> Genetic Algorithm Feature Search</h1>
+                            <p class="section-subtitle">Stochastic bio-inspired evolutionary search optimizing sensor signal selection and reducing sensor array drift</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" id="btn-run-ga-only" onclick="executeModelTraining()">
+                                <i class="fas fa-dna"></i> Run Genetic Optimization
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 360px 1fr; gap: 24px; margin-bottom: 24px;">
+                        
+                        <!-- GA Hyperparameter Configuration Panel -->
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-sliders"></i> Evolutionary Parameters</h3>
+                                <div class="preset-group">
+                                    <button class="preset-btn active" onclick="setPresetParams('balanced')">Balanced</button>
+                                    <button class="preset-btn" onclick="setPresetParams('fast')">Fast</button>
+                                    <button class="preset-btn" onclick="setPresetParams('deep')">Deep</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label">
+                                    <span>Population Size</span>
+                                    <span class="tech-tag" id="val-pop-size">20</span>
+                                </div>
+                                <input type="range" id="param-pop-size" min="10" max="80" step="5" value="20" oninput="updateParamDisplay('val-pop-size', this.value)">
+                                <small class="text-muted" style="font-size: 11px;">Chromosomes per generation</small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label">
+                                    <span>Generations</span>
+                                    <span class="tech-tag" id="val-n-gens">8</span>
+                                </div>
+                                <input type="range" id="param-n-gens" min="4" max="40" step="1" value="8" oninput="updateParamDisplay('val-n-gens', this.value)">
+                                <small class="text-muted" style="font-size: 11px;">Evolutionary iterations</small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label">
+                                    <span>Mutation Rate (p<sub>m</sub>)</span>
+                                    <span class="tech-tag" id="val-mut-rate">0.05</span>
+                                </div>
+                                <input type="range" id="param-mut-rate" min="0.01" max="0.20" step="0.01" value="0.05" oninput="updateParamDisplay('val-mut-rate', this.value)">
+                                <small class="text-muted" style="font-size: 11px;">Bit-flip probability per locus</small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label">
+                                    <span>Crossover Rate (p<sub>c</sub>)</span>
+                                    <span class="tech-tag" id="val-cross-rate">0.80</span>
+                                </div>
+                                <input type="range" id="param-cross-rate" min="0.50" max="0.95" step="0.05" value="0.80" oninput="updateParamDisplay('val-cross-rate', this.value)">
+                                <small class="text-muted" style="font-size: 11px;">One-point crossover probability</small>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="form-label">
+                                    <span>Feature Penalty (λ)</span>
+                                    <span class="tech-tag" id="val-penalty">0.010</span>
+                                </div>
+                                <input type="range" id="param-penalty" min="0.000" max="0.050" step="0.005" value="0.010" oninput="updateParamDisplay('val-penalty', this.value)">
+                                <small class="text-muted" style="font-size: 11px;">Parsimony coefficient in fitness</small>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <div class="form-label">
+                                    <span>Random Seed</span>
+                                </div>
+                                <input type="number" class="form-control" id="param-seed" value="42" style="font-family: var(--font-mono);">
+                            </div>
+                        </div>
+
+                        <!-- Convergence Line Chart & Live GA Stats -->
+                        <div style="display: flex; flex-direction: column; gap: 24px;">
+                            
+                            <!-- Convergence Graph -->
+                            <div class="card" style="flex: 1;">
+                                <div class="card-header-styled">
+                                    <h3 class="card-title"><i class="fas fa-chart-line"></i> Evolutionary Convergence History</h3>
+                                    <div style="display: flex; gap: 12px; font-size: 12px;">
+                                        <span style="color: var(--primary);">● Best Fitness</span>
+                                        <span style="color: var(--violet);">--- Mean Fitness</span>
+                                    </div>
+                                </div>
+                                <div id="ga-convergence-chart" style="height: 290px;"></div>
+                            </div>
+
+                            <!-- Best Chromosome Binary Matrix Visualizer -->
+                            <div class="card">
+                                <div class="card-header-styled">
+                                    <div>
+                                        <h3 class="card-title"><i class="fas fa-barcode"></i> Best Chromosome Binary Mask (128 Bits)</h3>
+                                        <small class="text-muted">1 = Feature Selected (Green) | 0 = Feature Eliminated (Dark)</small>
+                                    </div>
+                                    <span class="tech-tag" id="chromosome-selected-tag">Awaiting Optimization</span>
+                                </div>
+                                
+                                <div class="chromosome-viewer" id="chromosome-viewer-container">
+                                    <!-- 128 chromosome bits dynamically rendered -->
+                                    <div style="color: var(--text-muted); font-size: 12px; padding: 20px;">
+                                        Run Genetic Optimization to view the optimal feature selection chromosome.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 5: FEATURE SELECTION
+                     ========================================================== -->
+                <section class="view-section" id="section-feature-selection">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-filter"></i> Feature Selection Analysis</h1>
+                            <p class="section-subtitle">Examine the 16 physical sensors and inspect which of the 128 extracted signal features were preserved</p>
+                        </div>
+                    </div>
+
+                    <!-- Retained Features Per Sensor Bar Chart -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header-styled">
+                            <h3 class="card-title"><i class="fas fa-chart-column"></i> Features Retained Per Physical Sensor (Out of 8 Features Each)</h3>
+                            <small class="text-muted">16 Figaro Sensors (S1 - S16)</small>
+                        </div>
+                        <div id="sensor-retained-chart" style="height: 250px;"></div>
+                    </div>
+
+                    <!-- 16-Sensor Architecture Matrix Grid -->
+                    <div class="card">
+                        <div class="card-header-styled">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-table-cells"></i> 16-Sensor Array Selection Grid</h3>
+                                <p class="text-muted" style="font-size: 12px; margin-top: 2px;">Click any sensor card to inspect all 8 feature definitions and their selection status</p>
+                            </div>
+                            <span class="tech-tag" id="fs-selected-total-badge">128 Features Total</span>
+                        </div>
+
+                        <div class="sensor-matrix-grid" id="sensor-matrix-grid-container">
+                            <!-- 16 sensor cards rendered here -->
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 6: GAS PREDICTION (MOST CRITICAL SECTION)
+                     ========================================================== -->
+                <section class="view-section" id="section-gas-prediction">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-flask-vial"></i> AI Gas Classification Workbench</h1>
+                            <p class="section-subtitle">Manual sensor-derived feature entry & held-out test sample classification using GA-Optimized Random Forest</p>
+                        </div>
+                    </div>
+
+                    <!-- Instructions Banner -->
+                    <div class="prediction-instructions-box">
+                        <div class="instruction-icon"><i class="fas fa-circle-info"></i></div>
+                        <div>
+                            <div class="instruction-title">Selected-Feature Inference Protocol</div>
+                            <div class="instruction-desc" id="prediction-instruction-text">
+                                The Genetic Algorithm selects the most discriminative features from the original 128 features. 
+                                Enter the corresponding sensor-derived feature values below to classify the gas analyte.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Bar -->
+                    <div class="card" style="margin-bottom: 24px; padding: 14px 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn btn-primary" id="btn-predict-gas" onclick="executeGasPrediction()">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Predict Gas Class
+                                </button>
+                                
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <select id="select-sample-gas" class="form-select" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; font-size: 13px; font-weight: 500; cursor: pointer; outline: none;">
+                                        <option value="">🎲 Random Gas Sample</option>
+                                        <option value="Ethanol">1. Ethanol (Alcohol)</option>
+                                        <option value="Ethylene">2. Ethylene (Hydrocarbon)</option>
+                                        <option value="Ammonia">3. Ammonia (Alkaline)</option>
+                                        <option value="Acetaldehyde">4. Acetaldehyde (Aldehyde)</option>
+                                        <option value="Acetone">5. Acetone (Ketone)</option>
+                                        <option value="Toluene">6. Toluene (Aromatic)</option>
+                                    </select>
+                                    <button class="btn btn-secondary" id="btn-load-sample" onclick="loadHeldOutSampleValues()">
+                                        <i class="fas fa-shuffle"></i> Load Sample Values
+                                    </button>
+                                </div>
+
+                                <button class="btn btn-secondary" id="btn-fill-defaults" onclick="fillBaselineDefaults()">
+                                    <i class="fas fa-sliders"></i> Auto-Fill Baseline (0.0)
+                                </button>
+
+                                <button class="btn btn-secondary" onclick="clearPredictionInputs()">
+                                    <i class="fas fa-eraser"></i> Clear Inputs
+                                </button>
+                            </div>
+
+                            <!-- Sample Metadata Display (shown when sample values are loaded) -->
+                            <div id="loaded-sample-meta-tag" style="display: none; align-items: center; gap: 10px;">
+                                <span class="tech-tag" id="sample-meta-id"><i class="fas fa-database"></i> Test Sample #--</span>
+                                <span class="tech-tag" id="sample-meta-batch"><i class="fas fa-layer-group"></i> Batch #--</span>
+                                <span class="tech-tag" id="sample-meta-truth" style="display: none;"><i class="fas fa-tag"></i> Ground Truth: <strong>--</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Two-Column Workbench Layout: Dynamic Inputs vs Prediction Result Card -->
+                    <div class="manual-prediction-deck">
+                        
+                        <!-- Left: Dynamic Input Fields (Grouped by Sensor) -->
+                        <div>
+                            <div class="card" style="margin-bottom: 16px; padding: 14px 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-weight: 700; font-size: 14px; color: var(--text-main);">
+                                        <i class="fas fa-sliders" style="color: var(--primary); margin-right: 6px;"></i>
+                                        Required Sensor Feature Inputs
+                                    </span>
+                                    <span class="tech-tag" id="dynamic-input-count-badge">-- Inputs Required</span>
+                                </div>
+                            </div>
+
+                            <!-- Container where dynamic sensor clusters are rendered -->
+                            <div class="dynamic-form-wrap" id="dynamic-inputs-container">
+                                <div class="card" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                    <i class="fas fa-sliders" style="font-size: 32px; margin-bottom: 12px; color: #334155;"></i>
+                                    <p>GA-Optimized model has not been trained yet.</p>
+                                    <p style="font-size: 12px; margin-top: 6px;">Train models to dynamically generate input fields for only the GA-selected features.</p>
+                                    <button class="btn btn-primary" style="margin-top: 16px;" onclick="navigateToSection('model-training')">
+                                        Go to Model Training
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Result Card -->
+                        <div class="prediction-result-panel">
+                            <div class="result-card-main" id="prediction-result-card">
+                                <div class="result-eyebrow">Random Forest Classification</div>
+                                <div class="predicted-gas-title" id="res-gas-name">Awaiting Input</div>
+                                <div class="predicted-formula" id="res-gas-formula">Formula: -- | Type: --</div>
+
+                                <div class="confidence-gauge-box">
+                                    <div class="confidence-header">
+                                        <span>Model Confidence</span>
+                                        <span class="confidence-num" id="res-confidence-pct">--%</span>
+                                    </div>
+                                    <div class="progress-track" style="margin: 0;">
+                                        <div class="progress-fill" id="res-confidence-bar" style="width: 0%; background: var(--success);"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 6-Class Probability Bar Chart -->
+                                <div style="text-align: left; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px;">
+                                    <i class="fas fa-chart-simple text-primary"></i> Analyte Probabilities
+                                </div>
+                                <div class="prob-chart-container" id="prediction-prob-chart"></div>
+
+                                <!-- Metadata Rows -->
+                                <div class="result-meta-tags">
+                                    <div class="meta-row">
+                                        <span>Model:</span>
+                                        <strong id="res-model-used">GA-Optimized RF</strong>
+                                    </div>
+                                    <div class="meta-row">
+                                        <span>Features Used:</span>
+                                        <strong id="res-features-used">-- of 128</strong>
+                                    </div>
+                                    <div class="meta-row">
+                                        <span>Inference Timestamp:</span>
+                                        <strong id="res-timestamp">--</strong>
+                                    </div>
+                                    <div class="meta-row" id="res-ground-truth-row" style="display: none;">
+                                        <span>Ground Truth Match:</span>
+                                        <strong id="res-truth-match" style="color: var(--success);">Verified Match</strong>
+                                    </div>
+                                </div>
+
+                                <p class="disclaimer-note">
+                                    <i class="fas fa-shield-halved"></i> 
+                                    Note: Model confidence represents probabilistic classification and is not a physical hardware sensor guarantee.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 7: PERFORMANCE ANALYSIS
+                     ========================================================== -->
+                <section class="view-section" id="section-performance-analysis">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-scale-balanced"></i> Model Performance Benchmarking</h1>
+                            <p class="section-subtitle">Rigorous statistical comparison between Baseline (128 features) and GA-Optimized Random Forest</p>
+                        </div>
+                    </div>
+
+                    <!-- Comparison KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Baseline Accuracy</span>
+                                <span class="kpi-number" id="perf-base-acc">--%</span>
+                                <span class="kpi-sub">All 128 Features</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-green">
+                            <div class="kpi-icon"><i class="fas fa-award"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Optimized Accuracy</span>
+                                <span class="kpi-number" id="perf-opt-acc">--%</span>
+                                <span class="kpi-sub" id="perf-acc-delta">Delta: --%</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-violet">
+                            <div class="kpi-icon"><i class="fas fa-compress"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Feature Reduction</span>
+                                <span class="kpi-number" id="perf-red-pct">--%</span>
+                                <span class="kpi-sub" id="perf-feat-sub">128 → -- Features</span>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card accent-amber">
+                            <div class="kpi-icon"><i class="fas fa-stopwatch"></i></div>
+                            <div class="kpi-body">
+                                <span class="kpi-label">Training Speedup</span>
+                                <span class="kpi-number" id="perf-speedup">--x</span>
+                                <span class="kpi-sub">Reduced Dimensionality</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Comparison Chart & Reduction Donut -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-chart-column"></i> Metric Comparison: Baseline vs GA-Optimized</h3>
+                                <small class="text-muted">Held-out Test Set</small>
+                            </div>
+                            <div id="perf-metrics-chart" style="height: 280px;"></div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header-styled">
+                                <h3 class="card-title"><i class="fas fa-chart-pie"></i> Feature Space Reduction</h3>
+                                <small class="text-muted">Preserved vs Eliminated</small>
+                            </div>
+                            <div id="perf-reduction-chart" style="height: 280px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Side-by-Side Confusion Matrices -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header-styled">
+                            <div>
+                                <h3 class="card-title"><i class="fas fa-table-cells-large"></i> Confusion Matrices (6 × 6 Gas Classes)</h3>
+                                <small class="text-muted">Predicted Class vs Ground Truth on Unseen Held-out Test Data</small>
+                            </div>
+                            <div class="preset-group">
+                                <button class="preset-btn active" id="btn-cm-opt" onclick="toggleCmView('optimized')">Optimized Model</button>
+                                <button class="preset-btn" id="btn-cm-base" onclick="toggleCmView('baseline')">Baseline Model</button>
+                            </div>
+                        </div>
+
+                        <div id="cm-chart-optimized" style="height: 380px;"></div>
+                        <div id="cm-chart-baseline" style="height: 380px; display: none;"></div>
+                    </div>
+
+                    <!-- Per-Class Classification Report Table -->
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-header-styled">
+                            <h3 class="card-title"><i class="fas fa-list-check"></i> Per-Class Classification Report (GA-Optimized Model)</h3>
+                            <span class="tech-tag">Held-out Test Samples</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="custom-table" id="classification-report-table">
+                                <thead>
+                                    <tr>
+                                        <th>Gas Analyte</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1-Score</th>
+                                        <th>Support (# Samples)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classification-report-body">
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                            Train models to generate per-class evaluation metrics.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Academic Experimental Conclusion -->
+                    <div class="card" style="background: linear-gradient(135deg, var(--bg-card), #17243a); border-left: 4px solid var(--primary);">
+                        <div class="card-header-styled">
+                            <h3 class="card-title"><i class="fas fa-graduation-cap"></i> Academic Experimental Conclusion</h3>
+                        </div>
+                        <p id="academic-conclusion-paragraph" style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+                            Run model training and genetic optimization to view the experimental synthesis and dimensionality reduction analysis.
+                        </p>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 8: PREDICTION HISTORY
+                     ========================================================== -->
+                <section class="view-section" id="section-prediction-history">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-clock-rotate-left"></i> Prediction History</h1>
+                            <p class="section-subtitle">Audit log of all manual and test sample inferences conducted during this session</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-danger" onclick="confirmClearHistory()">
+                                <i class="fas fa-trash-can"></i> Clear History
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Timestamp</th>
+                                        <th>Predicted Gas</th>
+                                        <th>Confidence</th>
+                                        <th>Model Used</th>
+                                        <th>Features</th>
+                                        <th>Source</th>
+                                        <th>Ground Truth</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="history-table-body">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                            No predictions recorded in this session.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- ==========================================================
+                     SECTION 9: ABOUT BIOSENSEGA
+                     ========================================================== -->
+                <section class="view-section" id="section-about-biosense">
+                    <div class="section-heading-wrap">
+                        <div>
+                            <h1 class="section-title"><i class="fas fa-circle-info"></i> About BioSenseGA</h1>
+                            <p class="section-subtitle">Bio-inspired Artificial Nose Sensor Array Optimization & Machine Learning Classification</p>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px;">
+                        <div class="card">
+                            <h3 class="card-title" style="margin-bottom: 14px;"><i class="fas fa-microscope text-primary"></i> Project Overview & Motivation</h3>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+                                <strong>BioSenseGA</strong> is an advanced engineering platform that simulates the biological olfactory system using an array of 
+                                16 Figaro metal oxide semiconductor (MOX) gas sensors. In real-world artificial olfaction, MOX sensor arrays suffer from 
+                                chemical sensor drift caused by sensor aging, temperature fluctuations, and environmental contamination over extended operational periods.
+                            </p>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 12px;">
+                                Furthermore, operating 16 physical sensors with 128 extracted transient dynamics features imposes high power consumption, computational overhead, 
+                                and multicollinearity. BioSenseGA addresses this challenge by employing a <strong>Genetic Algorithm (GA)</strong> to search the 
+                                combinatorial space of \(2^{128}\) possible feature subsets, identifying the minimal salient sensor feature subset that preserves or improves 
+                                gas classification accuracy with a Random Forest ensemble.
+                            </p>
+                            <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.7;">
+                                This project is designed as an Engineering Lab & Demonstration system carrying 40% of the course grade, demonstrating the synergy of 
+                                bio-inspired optimization and ensemble machine learning for industrial and environmental sensing.
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <h3 class="card-title" style="margin-bottom: 14px;"><i class="fas fa-flask text-violet"></i> 6 Target Analytes</h3>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                                    <span class="gas-badge ethanol">Ethanol</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">C₂H₅OH</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                                    <span class="gas-badge ethylene">Ethylene</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">C₂H₄</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                                    <span class="gas-badge ammonia">Ammonia</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">NH₃</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                                    <span class="gas-badge acetaldehyde">Acetaldehyde</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">C₂H₄O</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                                    <span class="gas-badge acetone">Acetone</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">C₃H₆O</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0;">
+                                    <span class="gas-badge toluene">Toluene</span>
+                                    <span style="font-family: var(--font-mono); color: var(--text-secondary);">C₇H₈</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Principles Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                        <div class="card">
+                            <h4 style="color: var(--primary); font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+                                <i class="fas fa-wave-square"></i> Feature Extraction Dynamics
+                            </h4>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                                Each sensor produces 8 engineered features: steady-state differential resistance (\(\Delta R\)), absolute magnitude (\(|\Delta R|\)), 
+                                and 6 exponential moving averages (EMA) across 3 scalar smoothing factors (\(\alpha = 0.001, 0.01, 0.1\)) capturing 
+                                rising adsorption and decaying desorption phases.
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <h4 style="color: var(--violet); font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+                                <i class="fas fa-dna"></i> Genetic Optimization Formulation
+                            </h4>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                                Binary chromosome with 128 loci. Fitness function balances cross-validation accuracy and a parsimony penalty:
+                                <br>
+                                <code style="font-family: var(--font-mono); font-size: 11px; color: var(--primary);">Fitness = Accuracy - λ × (N_selected / 128)</code>.
+                                Employs tournament selection (\(k=3\)), single-point crossover, bit-flip mutation, and strict elitism.
+                            </p>
+                        </div>
+
+                        <div class="card">
+                            <h4 style="color: var(--success); font-size: 14px; font-weight: 700; margin-bottom: 8px;">
+                                <i class="fas fa-shield-halved"></i> Scientific Validation Protocol
+                            </h4>
+                            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.6;">
+                                Adheres to strict anti-leakage methodology: stratified 80/20 train/test split, StandardScaler fitted strictly on training data, 
+                                GA surrogate cross-validation executed solely within the training partition, and final evaluation conducted on held-out test data.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- ==================================================================
+         MODALS & OVERLAYS
+         ================================================================== -->
+    
+    <!-- 1. Inspect Sample Modal (Dataset Explorer) -->
+    <div class="modal-overlay" id="modal-sample-detail">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-sample-title">Sample Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-sample-detail')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-sample-body">
+                <!-- Dynamically filled with 16 sensors feature values -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-sample-detail')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Inspect Sensor Modal (Feature Selection) -->
+    <div class="modal-overlay" id="modal-sensor-detail">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-sensor-title">Sensor Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-sensor-detail')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-sensor-body">
+                <!-- Dynamically filled with 8 feature definitions -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-sensor-detail')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Inspect History Record Modal (Prediction History) -->
+    <div class="modal-overlay" id="modal-history-detail">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-history-title">Prediction Record Details</h3>
+                <button class="modal-close-btn" onclick="closeModal('modal-history-detail')">&times;</button>
+            </div>
+            <div class="modal-body" id="modal-history-body">
+                <!-- Dynamically filled with prediction probabilities -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('modal-history-detail')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- Application JavaScript -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
