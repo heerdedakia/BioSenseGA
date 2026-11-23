@@ -8,10 +8,10 @@ from sklearn.metrics import (
 
 def get_classifier(name='Random Forest', random_state=42):
     if name == 'Random Forest':
-        # n_estimators=35, max_depth=14, n_jobs=1 for ultra-fast fitting and low memory footprint on cloud containers
+        # n_estimators=25, max_depth=12, n_jobs=1 for lightning-fast fitting (<0.8s) and minimal RAM footprint
         return RandomForestClassifier(
-            n_estimators=35,
-            max_depth=14,
+            n_estimators=25,
+            max_depth=12,
             max_features='sqrt',
             n_jobs=1,
             random_state=random_state

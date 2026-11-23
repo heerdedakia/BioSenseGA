@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import accuracy_score
 import time
@@ -65,11 +65,9 @@ class GeneticAlgorithm:
         if len(selected) == 0:
             return 0.0
 
-        # Fast surrogate Random Forest (single-threaded per-fit avoids Windows joblib overhead)
-        clf = RandomForestClassifier(
-            n_estimators=8,
-            max_depth=8,
-            max_features='sqrt',
+        # Ultra-fast Decision Tree surrogate for sub-second GA convergence on cloud containers
+        clf = DecisionTreeClassifier(
+            max_depth=6,
             random_state=42
         )
 
