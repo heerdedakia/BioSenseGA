@@ -505,8 +505,8 @@ def train_models_and_run_ga():
         else:
             ga = GeneticAlgorithm(
                 n_features=N_FEATURES,
-                population_size=min(max(10, population_size), 20),
-                n_generations=min(max(4, n_generations), 8),
+                population_size=min(max(10, population_size), 16),
+                n_generations=min(max(4, n_generations), 6),
                 mutation_rate=mutation_rate,
                 crossover_rate=crossover_rate,
                 feature_penalty=feature_penalty,

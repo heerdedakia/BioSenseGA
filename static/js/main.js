@@ -525,33 +525,49 @@ async function executeModelTraining() {
     resetPipelineVisualizer();
     setPipelineStage(1, 15, 'Stage 1: Preprocessing 13,910 sensor rows & scaling...');
 
-    // Start timer & dynamic progress updater
+    const isDefault = (
+        popSize === 20 &&
+        nGens === 8 &&
+        Math.abs(penalty - 0.010) < 0.001 &&
+        Math.abs(mutRate - 0.05) < 0.001 &&
+        Math.abs(crossRate - 0.80) < 0.001 &&
+        seed === 42
+    );
+
+    // Realistic dynamic stage progression based on whether fast-path or evolutionary retrain
     let secondsElapsed = 0;
+    const timeouts = [];
+
+    if (isDefault) {
+        timeouts.push(setTimeout(() => setPipelineStage(2, 30, 'Stage 2: Stratified 80/20 train/test partition...'), 150));
+        timeouts.push(setTimeout(() => setPipelineStage(3, 50, 'Stage 3: Verified Baseline Random Forest (128 features)...'), 300));
+        timeouts.push(setTimeout(() => setPipelineStage(4, 70, 'Stage 4: Loading optimal Genetic Algorithm solution...'), 450));
+        timeouts.push(setTimeout(() => setPipelineStage(5, 85, 'Stage 5: Extracting 68-feature chromosome mask...'), 600));
+        timeouts.push(setTimeout(() => setPipelineStage(6, 92, 'Stage 6: Finalizing GA-Optimized Random Forest...'), 750));
+    } else {
+        timeouts.push(setTimeout(() => setPipelineStage(2, 25, 'Stage 2: Stratified 80/20 train/test partition...'), 800));
+        timeouts.push(setTimeout(() => setPipelineStage(3, 45, 'Stage 3: Loading baseline model weights...'), 1800));
+        timeouts.push(setTimeout(() => setPipelineStage(4, 65, 'Stage 4: Running Genetic Algorithm feature optimization...'), 3000));
+        timeouts.push(setTimeout(() => setPipelineStage(5, 80, 'Stage 5: Extracting optimal feature chromosome mask...'), 5000));
+        timeouts.push(setTimeout(() => setPipelineStage(6, 90, 'Stage 6: Training GA-Optimized Random Forest on selected features...'), 7000));
+    }
+
     const timerInterval = setInterval(() => {
         secondsElapsed++;
         const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
         const secs = String(secondsElapsed % 60).padStart(2, '0');
         const badge = document.getElementById('training-timer-badge');
         if (badge) badge.textContent = `${mins}:${secs}`;
+
+        if (!isDefault && secondsElapsed > 8) {
+            const statusEl = document.getElementById('training-status-text');
+            if (statusEl && AppState.isTraining) {
+                statusEl.textContent = `Stage 6: Training GA-Optimized Random Forest on selected features... (${secondsElapsed}s elapsed)`;
+            }
+        }
     }, 1000);
 
-    // Dynamic progress stages (fast transition)
-    const stageTimeout1 = setTimeout(() => setPipelineStage(2, 25, 'Stage 2: Stratified 80/20 train/test partition...'), 250);
-    const stageTimeout2 = setTimeout(() => setPipelineStage(3, 45, 'Stage 3: Training Baseline Random Forest (128 features)...'), 500);
-    const stageTimeout3 = setTimeout(() => setPipelineStage(4, 65, 'Stage 4: Running Genetic Algorithm feature optimization...'), 800);
-    const stageTimeout4 = setTimeout(() => setPipelineStage(5, 80, 'Stage 5: Extracting optimal feature chromosome mask...'), 1100);
-    const stageTimeout5 = setTimeout(() => setPipelineStage(6, 95, 'Stage 6: Training GA-Optimized Random Forest on selected features...'), 1400);
-
     try {
-        const isDefault = (
-            popSize === 20 &&
-            nGens === 8 &&
-            Math.abs(penalty - 0.010) < 0.001 &&
-            Math.abs(mutRate - 0.05) < 0.001 &&
-            Math.abs(crossRate - 0.80) < 0.001 &&
-            seed === 42
-        );
-
         let response = await fetch('/api/train_models', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -583,11 +599,7 @@ async function executeModelTraining() {
         }
 
         clearInterval(timerInterval);
-        clearTimeout(stageTimeout1);
-        clearTimeout(stageTimeout2);
-        clearTimeout(stageTimeout3);
-        clearTimeout(stageTimeout4);
-        clearTimeout(stageTimeout5);
+        timeouts.forEach(t => clearTimeout(t));
 
         let data;
         try {
@@ -631,7 +643,9 @@ async function executeModelTraining() {
         }
     } catch (e) {
         clearInterval(timerInterval);
+        timeouts.forEach(t => clearTimeout(t));
         AppState.isTraining = false;
+        setPipelineStage(1, 0, 'Training stopped: ' + e.message);
         const descEl = document.getElementById('pipeline-stage-description');
         if (descEl) descEl.innerHTML = `<span style="color: var(--danger); font-weight: 600;"><i class="fas fa-triangle-exclamation"></i> Pipeline failed: ${e.message}</span>`;
         showToast(`Request failed: ${e.message}`, 'error');

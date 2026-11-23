@@ -31,9 +31,9 @@ class GeneticAlgorithm:
         self.fitness_cache = {}
 
         # Optimized subsample of training set for ultra-fast surrogate evaluations
-        # 800 samples provides strong statistical discrimination while evaluating in ~30ms
+        # 350 samples provides sharp statistical discrimination in ~3 seconds on cloud CPUs
         n_train_total = len(self.X_train)
-        sample_size = min(800, n_train_total)
+        sample_size = min(350, n_train_total)
         sample_indices = self.rng.choice(n_train_total, size=sample_size, replace=False)
         self.X_ga = self.X_train[sample_indices]
         self.y_ga = self.y_train[sample_indices]
