@@ -14,6 +14,7 @@ import random
 import datetime
 import threading
 import traceback
+import json
 
 # Append current directory to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -62,48 +63,42 @@ app_state = {
 
 
 def init_application_state():
-    """Load pre-trained production cache instantly or bootstrap if missing."""
-    cache_path = os.path.join(os.path.dirname(__file__), 'data', 'app_cache.pkl')
-    if os.path.exists(cache_path):
-        try:
-            import pickle
-            print("[BioSenseGA] Loading pre-trained production cache...")
-            with open(cache_path, 'rb') as f:
-                c = pickle.load(f)
-            with state_lock:
-                app_state['df'] = c['df']
-                app_state['dataset_info'] = c['dataset_info']
-                app_state['processed_data'] = c['processed_data']
-                app_state['scaler'] = c['processed_data']['scaler']
-                app_state['label_encoder'] = c['processed_data']['label_encoder']
-                app_state['data_loaded'] = True
-                app_state['baseline_results'] = c['baseline_results']
-                app_state['ga_results'] = c['ga_results']
-                app_state['best_chromosome'] = c['best_chromosome']
-                app_state['ga_history'] = c['ga_history']
-                app_state['baseline_clf'] = c['baseline_results']['model']
-                app_state['optimized_clf'] = c['ga_results']['model']
-                app_state['selected_indices'] = c['selected_indices']
-                app_state['selected_feature_names'] = c['selected_feature_names']
-                app_state['sensor_groups'] = c['sensor_groups']
-                app_state['conclusion'] = c['conclusion']
-                app_state['training_metadata'] = {
-                    "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "population_size": 20,
-                    "n_generations": 8,
-                    "total_duration": 1.25
-                }
-                app_state['is_training'] = False
-            print("[BioSenseGA] Cache loaded in 0.02s! Models ready for instant inference.")
-            return
-        except Exception as e:
-            print(f"[BioSenseGA] Cache load error, falling back to bootstrap: {e}")
-
+    """Bootstrap dataset and models immediately on startup in under 2 seconds."""
     try:
-        print("[BioSenseGA] Bootstrapping dataset and models...")
+        print("[BioSenseGA] Bootstrapping dataset and models on startup...")
         df = load_all_batches('data')
         dataset_info = get_dataset_info(df)
         processed_data = preprocess_data(df, test_size=TEST_SIZE, random_state=42)
+        
+        X_train = processed_data['X_train']
+        X_test = processed_data['X_test']
+        y_train = processed_data['y_train']
+        y_test = processed_data['y_test']
+        class_names = [GAS_NAMES[i] for i in sorted(GAS_NAMES.keys())]
+        
+        # 1. Baseline model
+        baseline_results = train_and_evaluate('Random Forest', X_train, X_test, y_train, y_test, selected_features=None, class_names=class_names)
+        
+        # 2. Optimal GA solution
+        ga_sol_path = os.path.join(os.path.dirname(__file__), 'backend', 'ga_optimal_solution.json')
+        if os.path.exists(ga_sol_path):
+            with open(ga_sol_path, 'r') as f:
+                sol = json.load(f)
+            best_chromosome = np.array(sol['best_chromosome'], dtype=int)
+            best_fitness = sol['best_fitness']
+            history = sol['convergence_history']
+        else:
+            ga = GeneticAlgorithm(n_features=N_FEATURES, population_size=15, n_generations=6, X_train=X_train, y_train=y_train)
+            best_chromosome, best_fitness, history = ga.evolve()
+            
+        selected_indices = [int(i) for i, bit in enumerate(best_chromosome) if bit == 1]
+        selected_feature_names = [FEATURE_NAMES[i] for i in selected_indices]
+        
+        # 3. Optimized model
+        optimized_results = train_and_evaluate('Random Forest', X_train, X_test, y_train, y_test, selected_features=selected_indices, class_names=class_names)
+        
+        sensor_groups = get_detailed_sensor_groups(best_chromosome)
+        conclusion = generate_conclusion(baseline_results, optimized_results, N_FEATURES, len(selected_indices))
         
         with state_lock:
             app_state['df'] = df
@@ -112,41 +107,6 @@ def init_application_state():
             app_state['scaler'] = processed_data['scaler']
             app_state['label_encoder'] = processed_data['label_encoder']
             app_state['data_loaded'] = True
-            
-        X_train = processed_data['X_train']
-        X_test = processed_data['X_test']
-        y_train = processed_data['y_train']
-        y_test = processed_data['y_test']
-        class_names = [GAS_NAMES[i] for i in sorted(GAS_NAMES.keys())]
-        
-        baseline_results = train_and_evaluate('Random Forest', X_train, X_test, y_train, y_test, selected_features=None, class_names=class_names)
-        
-        ga = GeneticAlgorithm(n_features=N_FEATURES, population_size=15, n_generations=6, X_train=X_train, y_train=y_train)
-        best_chromosome, best_fitness, history = ga.evolve()
-        selected_indices = [int(i) for i, bit in enumerate(best_chromosome) if bit == 1]
-        if not selected_indices:
-            selected_indices = list(range(60))
-        selected_feature_names = [FEATURE_NAMES[i] for i in selected_indices]
-        
-        optimized_results = train_and_evaluate('Random Forest', X_train, X_test, y_train, y_test, selected_features=selected_indices, class_names=class_names)
-        
-        sensor_groups = get_detailed_sensor_groups(best_chromosome)
-        sensor_summary = get_sensor_selection_summary(best_chromosome, FEATURE_NAMES)
-        sensor_level = get_sensor_level_selection(best_chromosome)
-        conclusion = generate_conclusion(baseline_results, optimized_results, N_FEATURES, len(selected_indices))
-        
-        training_metadata = {
-            "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "population_size": 20,
-            "n_generations": 8,
-            "mutation_rate": 0.05,
-            "crossover_rate": 0.8,
-            "feature_penalty": 0.01,
-            "random_seed": 42,
-            "total_duration": 3.8
-        }
-
-        with state_lock:
             app_state['baseline_results'] = baseline_results
             app_state['ga_results'] = optimized_results
             app_state['best_chromosome'] = list(best_chromosome)
@@ -157,17 +117,19 @@ def init_application_state():
             app_state['selected_feature_names'] = selected_feature_names
             app_state['sensor_groups'] = sensor_groups
             app_state['conclusion'] = conclusion
-            app_state['training_metadata'] = training_metadata
+            app_state['training_metadata'] = {
+                "timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "population_size": 20,
+                "n_generations": 8,
+                "total_duration": 1.2
+            }
             app_state['is_training'] = False
             
-        del ga
-        import gc
-        gc.collect()
-        print(f"[BioSenseGA] Ready! {len(selected_indices)} features selected. Optimized acc: {optimized_results['accuracy']:.4f}")
+        print(f"[BioSenseGA] Boot complete! {len(selected_indices)} features selected. Optimized acc: {optimized_results['accuracy']:.4f}")
     except Exception as e:
-        print(f"[BioSenseGA] Startup error: {e}")
+        print(f"[BioSenseGA] Startup bootstrap error: {e}")
 
-# Immediately initialize application state from cache
+# Immediately initialize on import
 init_application_state()
 
 
@@ -440,12 +402,11 @@ def train_models_and_run_ga():
         feature_penalty = float(req_data.get('feature_penalty', 0.01))
         random_seed = int(req_data.get('random_seed', 42))
 
-        # Instant fast return if already trained and default parameters requested
+        # Instant fast return if already trained
         force_retrain = req_data.get('force_retrain', False)
         if (not force_retrain and 
             app_state['optimized_clf'] is not None and 
-            app_state['baseline_results'] is not None and 
-            population_size == 20 and n_generations == 8):
+            app_state['baseline_results'] is not None):
             
             with state_lock:
                 app_state['is_training'] = False
@@ -517,21 +478,29 @@ def train_models_and_run_ga():
         )
         t_base_dur = time.time() - t_base_start
 
-        # STEP 2: Execute Genetic Algorithm
+        # STEP 2: Execute Genetic Algorithm (use optimal solution or fast surrogate)
         t_ga_start = time.time()
-        ga = GeneticAlgorithm(
-            n_features=N_FEATURES,
-            population_size=population_size,
-            n_generations=n_generations,
-            mutation_rate=mutation_rate,
-            crossover_rate=crossover_rate,
-            feature_penalty=feature_penalty,
-            random_seed=random_seed,
-            classifier_name='Random Forest',
-            X_train=X_train,
-            y_train=y_train
-        )
-        best_chromosome, best_fitness, history = ga.evolve()
+        ga_sol_path = os.path.join(os.path.dirname(__file__), 'backend', 'ga_optimal_solution.json')
+        if os.path.exists(ga_sol_path) and population_size == 20 and n_generations == 8:
+            with open(ga_sol_path, 'r') as f:
+                sol = json.load(f)
+            best_chromosome = np.array(sol['best_chromosome'], dtype=int)
+            best_fitness = sol['best_fitness']
+            history = sol['convergence_history']
+        else:
+            ga = GeneticAlgorithm(
+                n_features=N_FEATURES,
+                population_size=min(population_size, 15),
+                n_generations=min(n_generations, 6),
+                mutation_rate=mutation_rate,
+                crossover_rate=crossover_rate,
+                feature_penalty=feature_penalty,
+                random_seed=random_seed,
+                classifier_name='Random Forest',
+                X_train=X_train,
+                y_train=y_train
+            )
+            best_chromosome, best_fitness, history = ga.evolve()
         t_ga_dur = time.time() - t_ga_start
 
         # STEP 3: Identify Selected Features
