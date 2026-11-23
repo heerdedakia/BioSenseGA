@@ -543,6 +543,15 @@ async function executeModelTraining() {
     const stageTimeout5 = setTimeout(() => setPipelineStage(6, 95, 'Stage 6: Training GA-Optimized Random Forest on selected features...'), 1400);
 
     try {
+        const isDefault = (
+            popSize === 20 &&
+            nGens === 8 &&
+            Math.abs(penalty - 0.010) < 0.001 &&
+            Math.abs(mutRate - 0.05) < 0.001 &&
+            Math.abs(crossRate - 0.80) < 0.001 &&
+            seed === 42
+        );
+
         let response = await fetch('/api/train_models', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -552,7 +561,8 @@ async function executeModelTraining() {
                 mutation_rate: mutRate,
                 crossover_rate: crossRate,
                 feature_penalty: penalty,
-                random_seed: seed
+                random_seed: seed,
+                force_retrain: !isDefault
             })
         });
 

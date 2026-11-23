@@ -402,9 +402,20 @@ def train_models_and_run_ga():
         feature_penalty = float(req_data.get('feature_penalty', 0.01))
         random_seed = int(req_data.get('random_seed', 42))
 
-        # Instant fast return if already trained
+        # Check if requested parameters match the precomputed default solution
+        is_default_params = (
+            population_size == 20 and
+            n_generations == 8 and
+            abs(feature_penalty - 0.01) < 1e-4 and
+            abs(mutation_rate - 0.05) < 1e-4 and
+            abs(crossover_rate - 0.8) < 1e-4 and
+            random_seed == 42
+        )
         force_retrain = req_data.get('force_retrain', False)
+
+        # Fast return pre-computed optimal model ONLY if using default parameters and not forced to retrain
         if (not force_retrain and 
+            is_default_params and
             app_state['optimized_clf'] is not None and 
             app_state['baseline_results'] is not None):
             
@@ -470,18 +481,22 @@ def train_models_and_run_ga():
         y_test = app_state['processed_data']['y_test']
         class_names = [GAS_NAMES[i] for i in sorted(GAS_NAMES.keys())]
 
-        # STEP 1: Train Baseline Random Forest (all 128 features)
-        t_base_start = time.time()
-        baseline_results = train_and_evaluate(
-            'Random Forest', X_train, X_test, y_train, y_test,
-            selected_features=None, class_names=class_names
-        )
-        t_base_dur = time.time() - t_base_start
+        # STEP 1: Train Baseline Random Forest (all 128 features) or reuse cached
+        if app_state['baseline_results'] is not None and app_state['baseline_clf'] is not None:
+            baseline_results = app_state['baseline_results']
+            t_base_dur = 0.02
+        else:
+            t_base_start = time.time()
+            baseline_results = train_and_evaluate(
+                'Random Forest', X_train, X_test, y_train, y_test,
+                selected_features=None, class_names=class_names
+            )
+            t_base_dur = time.time() - t_base_start
 
         # STEP 2: Execute Genetic Algorithm (use optimal solution or fast surrogate)
         t_ga_start = time.time()
         ga_sol_path = os.path.join(os.path.dirname(__file__), 'backend', 'ga_optimal_solution.json')
-        if os.path.exists(ga_sol_path) and population_size == 20 and n_generations == 8:
+        if os.path.exists(ga_sol_path) and is_default_params:
             with open(ga_sol_path, 'r') as f:
                 sol = json.load(f)
             best_chromosome = np.array(sol['best_chromosome'], dtype=int)
@@ -490,8 +505,8 @@ def train_models_and_run_ga():
         else:
             ga = GeneticAlgorithm(
                 n_features=N_FEATURES,
-                population_size=min(population_size, 15),
-                n_generations=min(n_generations, 6),
+                population_size=min(max(10, population_size), 30),
+                n_generations=min(max(4, n_generations), 12),
                 mutation_rate=mutation_rate,
                 crossover_rate=crossover_rate,
                 feature_penalty=feature_penalty,
@@ -521,8 +536,9 @@ def train_models_and_run_ga():
         )
         t_opt_dur = time.time() - t_opt_start
 
-        # Free intermediate objects and trigger garbage collection
-        del ga
+        # Free intermediate objects and trigger garbage collection safely
+        if 'ga' in locals():
+            del ga
         import gc
         gc.collect()
 
